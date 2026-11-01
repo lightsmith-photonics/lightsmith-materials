@@ -45,4 +45,4 @@ markers = ["network: needs internet access (Crossref, GitHub)", "postgres: needs
 addopts = "-m 'not network'"
 
 [tool.uv.sources]
-lightsmith = { path = "../PlasmonHub", editable = true }  # sibling checkout until the library is published
+lightsmith = { path = "../lightsmith", editable = true }  # sibling checkout until the library is published

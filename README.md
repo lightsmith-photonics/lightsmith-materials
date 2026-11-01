@@ -64,7 +64,7 @@ cp .env.example .env
 scripts/dev.sh        # or scripts\dev.ps1 on Windows: starts db, migrates, imports once, serves with --reload
 uv run pytest         # unit tests (SQLite, the only place SQLite is accepted)
 TEST_DATABASE_URL=postgresql+psycopg://materials:change-me@127.0.0.1:5433/materials uv run pytest   # against Postgres; this empties the database
-uv run --extra library pytest   # with the sibling ../PlasmonHub library: also runs the parity and fit tests
+uv run --extra library pytest   # with the sibling ../lightsmith library: also runs the parity and fit tests
 ```
 
 | Command (`materials-db` or `lightsmith-materials`) | |
