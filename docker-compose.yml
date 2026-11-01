@@ -1,0 +1,84 @@
+# Lightsmith Materials: API + Postgres, with migrations and the data import as one-off jobs.
+#
+#   cp .env.example .env            # then set POSTGRES_PASSWORD and PLATFORM_JWT_SECRET
+#   docker compose up -d --build    # db -> migrate (runs once, exits 0) -> api on :8100
+#   docker compose --profile import run --rm importer   # load the pinned refractiveindex.info snapshot
+#
+# The importer is idempotent (skips a commit that is already imported) and pinned by RII_COMMIT.
+name: lightsmith-materials
+
+x-app: &app
+  build: .
+  image: lightsmith-materials:${IMAGE_TAG:-dev}
+  environment:
+    DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-materials}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-materials}
+    PLATFORM_JWT_SECRET: ${PLATFORM_JWT_SECRET:?set PLATFORM_JWT_SECRET in .env}
+    PLATFORM_JWT_AUDIENCE: ${PLATFORM_JWT_AUDIENCE:-materials-db}
+    PLATFORM_JWT_ISSUER: ${PLATFORM_JWT_ISSUER:-}
+    BRAND_NAME: ${BRAND_NAME:-Lightsmith Materials}
+    LIBRARY_NAME: ${LIBRARY_NAME:-Lightsmith}
+    PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8100}
+    CORS_ORIGINS: ${CORS_ORIGINS:-}
+    CROSSREF_ENABLED: ${CROSSREF_ENABLED:-true}
+    CROSSREF_MAILTO: ${CROSSREF_MAILTO:-}
+    RII_COMMIT: ${RII_COMMIT:-c5c2f188e848453def5970e347399d653df2ffc2}
+  read_only: true
+  tmpfs:
+    - /tmp
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-materials}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-materials}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"  # for host-side development (scripts/dev.*)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    <<: *app
+    command: ["materials-db", "migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *app
+    command: ["materials-db", "serve"]
+    volumes:
+      - data:/data  # DOI-metadata cache for submissions
+    ports:
+      - "${API_PORT:-8100}:8100"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  importer:
+    <<: *app
+    profiles: ["import"]
+    command: ["materials-db", "import-rii", "--if-needed", "--crossref"]
+    volumes:
+      - data:/data  # downloaded archive and DOI-metadata cache, reused between runs
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+volumes:
+  pgdata:
+  data:

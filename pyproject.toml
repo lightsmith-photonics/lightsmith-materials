@@ -1,0 +1,48 @@
+[project]
+name = "lightsmith-materials"
+version = "0.2.0"
+description = "Lightsmith Materials: open database of optical constants (n, k, permittivity, dispersive models) with every dataset tied to its source publication."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "Alexander Feghali" }]
+dependencies = [
+    "alembic>=1.13",
+    "fastapi>=0.115",
+    "httpx>=0.27",
+    "numpy>=2.0",
+    "psycopg[binary]>=3.2",
+    "pydantic>=2.6",
+    "pyjwt>=2.8",
+    "python-multipart>=0.0.9",
+    "pyyaml>=6.0",
+    "sqlalchemy>=2.0.30",
+    "uvicorn[standard]>=0.30",
+]
+
+[project.optional-dependencies]
+# Cross-checks against the simulation library and its Drude-Lorentz fitter.
+library = ["lightsmith>=0.1"]
+
+[project.scripts]
+materials-db = "materials_db.cli:main"
+lightsmith-materials = "materials_db.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/materials_db"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["network: needs internet access (Crossref, GitHub)", "postgres: needs TEST_DATABASE_URL"]
+addopts = "-m 'not network'"
+
+[tool.uv.sources]
+lightsmith = { path = "../PlasmonHub", editable = true }  # sibling checkout until the library is published

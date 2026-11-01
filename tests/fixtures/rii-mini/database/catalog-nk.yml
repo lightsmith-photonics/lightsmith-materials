@@ -1,0 +1,120 @@
+# Reduced copy of catalog-nk.yml from the refractiveindex.info database (CC0 1.0),
+# commit c5c2f188e848453def5970e347399d653df2ffc2, for tests. Data files are verbatim.
+
+- DIVIDER: "Research data"
+- SHELF: main
+  name: "MAIN - simple inorganic materials"
+  content:
+    - DIVIDER: "Au - Gold"
+    - BOOK: Au
+      name: "Au (Gold)"
+      content:
+        - DIVIDER: "Experimental data: bulk, thick film"
+        - PAGE: Johnson
+          name: "Johnson and Christy 1972: n,k 0.188–1.937 µm"
+          data: main/Au/nk/Johnson.yml
+    - DIVIDER: "Co - Cobalt"
+    - BOOK: Co
+      name: "Co (Cobalt)"
+      content:
+        - DIVIDER: "Experimental data"
+        - PAGE: Johnson
+          name: "Johnson and Christy 1974: n,k 0.188–1.937 µm"
+          data: main/Co/nk/Johnson.yml
+    - DIVIDER: "F - Fluorides"
+    - BOOK: BaF2
+      name: "BaF<sub>2</sub> (Barium fluoride)"
+      content:
+        - PAGE: Bosomworth-5K
+          name: "Bosomworth 1967: k 31.0–100 µm; 5 K"
+          data: main/BaF2/nk/Bosomworth-5K.yml
+    - DIVIDER: "Ge - Germanium and germanides"
+    - BOOK: Ge2Sb2Te5
+      name: "Ge2Sb2Te5 (Germanium antimony telluride, GST)"
+      content:
+        - DIVIDER: "Crystal"
+        - PAGE: Frantz-crystal
+          name: "Frantz et al. 2024: n,k 0.350–32.4 µm"
+          data: main/Ge2Sb2Te5/nk/Frantz-crystal.yml
+        - DIVIDER: "Amorphous"
+        - PAGE: Frantz-amorphous
+          name: "Frantz et al. 2024: n,k 0.350–29.6 µm"
+          data: main/Ge2Sb2Te5/nk/Frantz-amorphous.yml
+    - DIVIDER: "Nb - Niobium and niobates"
+    - BOOK: LiNbO3
+      name: "LiNbO<sub>3</sub> (Lithium niobate)"
+      content:
+        - PAGE: Zelmon-o
+          name: "Zelmon et al. 1997: n(o) 0.4–5.0 µm"
+          data: main/LiNbO3/nk/Zelmon-o.yml
+        - PAGE: Zelmon-e
+          name: "Zelmon et al. 1997: n(e) 0.4–5.0 µm"
+          data: main/LiNbO3/nk/Zelmon-e.yml
+    - DIVIDER: "O - Oxides"
+    - BOOK: CO
+      name: "CO (Carbon monoxide)"
+      content:
+        - PAGE: Smith
+          name: "Smith et al. 1976: n 0.168–0.289 µm"
+          data: main/CO1/nk/Smith.yml
+    - BOOK: SiO2
+      name: "SiO<sub>2</sub> (Silicon dioxide, Silica, Quartz)"
+      content:
+        - DIVIDER: "Fused silica"
+        - PAGE: Malitson
+          name: "Malitson 1965: n 0.21–6.7 µm"
+          data: main/SiO2/nk/Malitson.yml
+    - DIVIDER: "S - Sulfides"
+    - BOOK: AgGaS2
+      name: "AgGaS<sub>2</sub> (Silver gallium sulfide, AGS)"
+      content:
+        - PAGE: Boyd-o
+          name: "Boyd et al. 1971: n(o) 0.49–12 µm"
+          data: main/AgGaS2/nk/Boyd-o.yml
+- SHELF: organic
+  name: "ORGANIC - organic materials"
+  content:
+    - DIVIDER: "Alkanes"
+    - BOOK: methane
+      name: "CH<sub>4</sub> (Methane)"
+      content:
+        - DIVIDER: "Gas"
+        - PAGE: Loria
+          name: "Loria 1909: Gas at 0 °C; n 0.529–0.659 µm"
+          data: organic/CH4 - methane/nk/Loria.yml
+- SHELF: glass
+  name: "GLASS - glasses"
+  content:
+    - DIVIDER: "Multiple purpose glass"
+    - BOOK: fused_silica
+      name: "Fused silica (fused quartz)"
+      content:
+        - PAGE: Malitson
+          name: "Malitson 1965: n 0.21–3.71 µm"
+          data: main/SiO2/nk/Malitson.yml
+- DIVIDER: "Supplier data"
+- SHELF: specs
+  name: "SPEC SHEETS - data from material suppliers"
+  content:
+    - DIVIDER: "Optical glass"
+    - BOOK: SCHOTT-optical
+      name: "SCHOTT - Optical glass"
+      content:
+        - DIVIDER: "BK (Borosilicate crown)"
+        - PAGE: N-BK7
+          name: "N-BK7"
+          data: specs/schott/optical/N-BK7.yml
+        - DIVIDER: "Duplicate listing"
+        - PAGE: N-BK7
+          name: "N-BK7"
+          data: specs/schott/optical/N-BK7.yml
+- DIVIDER: "Selected data"
+- SHELF: popular_glass
+  name: "Popular optical glasses"
+  content:
+    - BOOK: BK7
+      name: "BK7"
+      content:
+        - PAGE: SCHOTT
+          name: "N-BK7 (SCHOTT)"
+          data: specs/schott/optical/N-BK7.yml

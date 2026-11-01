@@ -1,0 +1,273 @@
+{
+ "_comment": "Names the lightsmith library uses for its bundled datasets (src/lightsmith/data/materials/manifest.json, snapshot c5c2f188e8). Used to give those datasets matching slugs and aliases. Frozen copy: do not regenerate unless slugs may change.",
+ "datasets": {
+  "main/Au/nk/Johnson.yml": {
+   "material": "Au",
+   "material_aliases": [
+    "gold"
+   ],
+   "dataset": "Johnson-Christy",
+   "aliases": [
+    "Johnson",
+    "JC",
+    "Johnson-Christy-1972"
+   ],
+   "default": true
+  },
+  "main/Au/nk/McPeak.yml": {
+   "material": "Au",
+   "material_aliases": [
+    "gold"
+   ],
+   "dataset": "McPeak",
+   "aliases": [
+    "McPeak-2015"
+   ],
+   "default": false
+  },
+  "main/Au/nk/Rakic-LD.yml": {
+   "material": "Au",
+   "material_aliases": [
+    "gold"
+   ],
+   "dataset": "Rakic-LD",
+   "aliases": [
+    "Rakic",
+    "Rakic-1998"
+   ],
+   "default": false
+  },
+  "main/Ag/nk/Johnson.yml": {
+   "material": "Ag",
+   "material_aliases": [
+    "silver"
+   ],
+   "dataset": "Johnson-Christy",
+   "aliases": [
+    "Johnson",
+    "JC",
+    "Johnson-Christy-1972"
+   ],
+   "default": true
+  },
+  "main/Ag/nk/McPeak.yml": {
+   "material": "Ag",
+   "material_aliases": [
+    "silver"
+   ],
+   "dataset": "McPeak",
+   "aliases": [
+    "McPeak-2015"
+   ],
+   "default": false
+  },
+  "main/Ag/nk/Rakic-LD.yml": {
+   "material": "Ag",
+   "material_aliases": [
+    "silver"
+   ],
+   "dataset": "Rakic-LD",
+   "aliases": [
+    "Rakic",
+    "Rakic-1998"
+   ],
+   "default": false
+  },
+  "main/Al/nk/McPeak.yml": {
+   "material": "Al",
+   "material_aliases": [
+    "aluminium",
+    "aluminum"
+   ],
+   "dataset": "McPeak",
+   "aliases": [
+    "McPeak-2015"
+   ],
+   "default": true
+  },
+  "main/Al/nk/Rakic.yml": {
+   "material": "Al",
+   "material_aliases": [
+    "aluminium",
+    "aluminum"
+   ],
+   "dataset": "Rakic-1995",
+   "aliases": [
+    "Rakic"
+   ],
+   "default": false
+  },
+  "main/Al/nk/Rakic-LD.yml": {
+   "material": "Al",
+   "material_aliases": [
+    "aluminium",
+    "aluminum"
+   ],
+   "dataset": "Rakic-LD",
+   "aliases": [
+    "Rakic-1998"
+   ],
+   "default": false
+  },
+  "main/Cu/nk/Johnson.yml": {
+   "material": "Cu",
+   "material_aliases": [
+    "copper"
+   ],
+   "dataset": "Johnson-Christy",
+   "aliases": [
+    "Johnson",
+    "JC",
+    "Johnson-Christy-1972"
+   ],
+   "default": true
+  },
+  "main/Cu/nk/McPeak.yml": {
+   "material": "Cu",
+   "material_aliases": [
+    "copper"
+   ],
+   "dataset": "McPeak",
+   "aliases": [
+    "McPeak-2015"
+   ],
+   "default": false
+  },
+  "main/Cu/nk/Rakic-LD.yml": {
+   "material": "Cu",
+   "material_aliases": [
+    "copper"
+   ],
+   "dataset": "Rakic-LD",
+   "aliases": [
+    "Rakic",
+    "Rakic-1998"
+   ],
+   "default": false
+  },
+  "main/Si/nk/Green-2008.yml": {
+   "material": "Si",
+   "material_aliases": [
+    "silicon",
+    "c-Si"
+   ],
+   "dataset": "Green-2008",
+   "aliases": [
+    "Green"
+   ],
+   "default": true
+  },
+  "main/Si/nk/Schinke.yml": {
+   "material": "Si",
+   "material_aliases": [
+    "silicon",
+    "c-Si"
+   ],
+   "dataset": "Schinke",
+   "aliases": [
+    "Schinke-2015"
+   ],
+   "default": false
+  },
+  "main/Si/nk/Aspnes.yml": {
+   "material": "Si",
+   "material_aliases": [
+    "silicon",
+    "c-Si"
+   ],
+   "dataset": "Aspnes-Studna",
+   "aliases": [
+    "Aspnes",
+    "Aspnes-1983"
+   ],
+   "default": false
+  },
+  "main/TiO2/nk/Siefke.yml": {
+   "material": "TiO2",
+   "material_aliases": [
+    "titania",
+    "titanium dioxide"
+   ],
+   "dataset": "Siefke",
+   "aliases": [
+    "Siefke-2016"
+   ],
+   "default": true
+  },
+  "main/TiO2/nk/Sarkar.yml": {
+   "material": "TiO2",
+   "material_aliases": [
+    "titania",
+    "titanium dioxide"
+   ],
+   "dataset": "Sarkar",
+   "aliases": [
+    "Sarkar-2019"
+   ],
+   "default": false
+  },
+  "main/TiO2/nk/Devore-o.yml": {
+   "material": "TiO2",
+   "material_aliases": [
+    "titania",
+    "titanium dioxide"
+   ],
+   "dataset": "Devore-o",
+   "aliases": [
+    "Devore",
+    "rutile-o"
+   ],
+   "default": false
+  },
+  "main/SiO2/nk/Malitson.yml": {
+   "material": "SiO2",
+   "material_aliases": [
+    "silica",
+    "fused silica",
+    "glass"
+   ],
+   "dataset": "Malitson",
+   "aliases": [
+    "Malitson-1965"
+   ],
+   "default": true
+  },
+  "main/SiO2/nk/Lemarchand.yml": {
+   "material": "SiO2",
+   "material_aliases": [
+    "silica",
+    "fused silica",
+    "glass"
+   ],
+   "dataset": "Lemarchand",
+   "aliases": [
+    "Lemarchand-2013"
+   ],
+   "default": false
+  },
+  "main/H2O/nk/Hale.yml": {
+   "material": "H2O",
+   "material_aliases": [
+    "water"
+   ],
+   "dataset": "Hale-Querry",
+   "aliases": [
+    "Hale",
+    "Hale-Querry-1973"
+   ],
+   "default": true
+  },
+  "main/H2O/nk/Daimon-24.0C.yml": {
+   "material": "H2O",
+   "material_aliases": [
+    "water"
+   ],
+   "dataset": "Daimon-24C",
+   "aliases": [
+    "Daimon",
+    "Daimon-2007"
+   ],
+   "default": false
+  }
+ }
+}
