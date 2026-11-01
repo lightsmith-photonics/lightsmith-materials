@@ -5,7 +5,12 @@
 # of uv.lock (regenerate with: uv export --frozen --no-dev --no-emit-project -o requirements.lock).
 # Optional: bundle the simulation library to enable /model fits, e.g.
 #   docker build --build-arg LIBRARY_SPEC="lightsmith==0.2.0" -t lightsmith-materials .
+# or from a local wheel, passed as the `wheels` build context (mounted at /wheels):
+#   docker build --build-context wheels=<dir> --build-arg LIBRARY_SPEC=/wheels/<file>.whl -t lightsmith-materials .
 ARG PYTHON_IMAGE=python:3.12-slim
+
+# Empty unless overridden with --build-context wheels=<dir>.
+FROM scratch AS wheels
 
 # --- build: install the locked dependencies and the service into /opt/venv ---------------
 FROM ${PYTHON_IMAGE} AS build
@@ -19,7 +24,7 @@ COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/pip /opt/venv/bin/pip install --no-deps .
 ARG LIBRARY_SPEC=""
-RUN --mount=type=cache,target=/root/.cache/pip \
+RUN --mount=type=cache,target=/root/.cache/pip --mount=type=bind,from=wheels,target=/wheels \
     if [ -n "$LIBRARY_SPEC" ]; then /opt/venv/bin/pip install "$LIBRARY_SPEC"; fi
 
 # --- runtime: no build tools, non-root ---------------------------------------------------
