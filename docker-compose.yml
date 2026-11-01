@@ -58,7 +58,7 @@ services:
     volumes:
       - data:/data  # DOI-metadata cache for submissions
     ports:
-      - "${API_PORT:-8100}:8100"
+      - "${API_BIND:-127.0.0.1}:${API_PORT:-8100}:8100"  # API_BIND=0.0.0.0 to expose beyond this host
     depends_on:
       db:
         condition: service_healthy

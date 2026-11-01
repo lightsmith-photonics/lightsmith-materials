@@ -35,9 +35,9 @@ curl localhost:8100/healthz                # {"status":"ok","schema":"ok",...}
 
 | Service | What it does |
 | --- | --- |
-| `db` | `postgres:17`, with the `pgdata` named volume and a `pg_isready` healthcheck. Published on `127.0.0.1:${POSTGRES_PORT:-5433}` for host-side tools. |
+| `db` | `postgres:17`, with the `pgdata` named volume and a `pg_isready` healthcheck. Published on `127.0.0.1:${POSTGRES_PORT:-5433}` for host-side tools; change `POSTGRES_PORT` if that port is taken. |
 | `migrate` | Runs `materials-db migrate` (Alembic) once, then exits. The API waits for it to finish successfully. |
-| `api` | Serves the API. It never imports data on start. Its healthcheck returns 503 until the schema is at head. |
+| `api` | Serves the API on `${API_BIND:-127.0.0.1}:${API_PORT:-8100}`. It never imports data on start. Its healthcheck returns 503 until the schema is at head. |
 | `importer` | Behind the `import` profile. Runs `materials-db import-rii --if-needed --crossref`. It is idempotent: a commit that is already imported is skipped, and a changed file adds a dataset version. The commit comes from `RII_COMMIT`, and the `data` volume caches the archive and DOI metadata. |
 
 The image is multi-stage and uses only the official `python:3.12-slim` image:
