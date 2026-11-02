@@ -33,6 +33,10 @@ def _list(name: str) -> tuple[str, ...]:
     return tuple(s.strip() for s in os.environ.get(name, "").split(",") if s.strip())
 
 
+def _url(name: str, default: str) -> str:
+    return (os.environ.get(name) or default).rstrip("/")
+
+
 @dataclass(frozen=True)
 class Settings:
     brand_name: str  # product name shown in the API, exports and citations
@@ -48,6 +52,13 @@ class Settings:
     crossref_mailto: str | None
     rii_commit: str
     max_upload_bytes: int
+    # public website (server-rendered pages on the same app; see materials_db.site)
+    site_enabled: bool = True
+    docs_url: str = "https://docs.lightsmith.dev"
+    studio_url: str = "https://studio.lightsmith.dev"
+    community_url: str = "https://lightsmith.dev"
+    library_repo_url: str = "https://github.com/lightsmith-photonics/lightsmith"
+    library_install: str = "pip install lightsmith"
 
 
 def get_settings() -> Settings:
@@ -66,4 +77,10 @@ def get_settings() -> Settings:
         crossref_mailto=os.environ.get("CROSSREF_MAILTO") or None,
         rii_commit=os.environ.get("RII_COMMIT") or RII_DEFAULT_COMMIT,
         max_upload_bytes=int(os.environ.get("MAX_UPLOAD_BYTES") or 5_000_000),
+        site_enabled=_bool("SITE_ENABLED", True),
+        docs_url=_url("DOCS_URL", "https://docs.lightsmith.dev"),
+        studio_url=_url("STUDIO_URL", "https://studio.lightsmith.dev"),
+        community_url=_url("COMMUNITY_URL", "https://lightsmith.dev"),
+        library_repo_url=_url("LIBRARY_REPO_URL", "https://github.com/lightsmith-photonics/lightsmith"),
+        library_install=os.environ.get("LIBRARY_INSTALL") or "pip install lightsmith",
     )

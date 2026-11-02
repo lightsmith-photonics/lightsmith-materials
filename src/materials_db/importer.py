@@ -319,6 +319,8 @@ def import_rii(session: Session, source, commit: str, *, limit: int | None = Non
             stats.materials_created += 1
         mat.name, mat.name_html, mat.formula, mat.category = name, name_html, formula, category
         mat.group, mat.manufacturer, mat.description = group, manufacturer, description
+        mat.external_links = [{"url": str(x["url"]), "text": str(x.get("text") or x["url"])}
+                              for x in (info.get("LINKS") or []) if isinstance(x, dict) and x.get("url")]
         mat.aliases = aliases
         mat.tags = tags_for(p0.shelf, p0.book, formula, p0.book_group)
         mat.search_text = search_text(mat.slug, name, formula, manufacturer, *aliases)

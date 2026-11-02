@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="wrap page">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Browse</li></ol></nav>
+  <h1>Browse the database</h1>
+  <p class="lead">The catalog is organised like the source database: shelves hold books (materials, or supplier
+    catalogs), and books hold pages (datasets). You can also <a href="/search">search</a> or browse
+    <a href="#categories">by category</a>.</p>
+  {% for sec in sections %}
+  <section class="section">
+    <h2>{{ sec.name }}</h2>
+    {% if sec.text %}<p class="muted">{{ sec.text }}</p>{% endif %}
+    <ul class="shelf-grid">
+      {% for sh in sec.shelves %}
+      <li><a class="card shelf-card" href="/browse/{{ sh.shelf|urlquote }}">
+        <span class="shelf-title">{{ sh.title }}</span>
+        {% if sh.subtitle %}<span class="muted small">{{ sh.subtitle }}</span>{% endif %}
+        <span class="shelf-meta">{{ "{:,}".format(sh.books) }} books · {{ "{:,}".format(sh.pages) }} pages</span>
+      </a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+  <section class="section" id="categories">
+    <h2>Categories</h2>
+    <ul class="chips">
+      {% for id, name in categories.items() %}<li><a class="chip chip-lg" href="/categories/{{ id }}">{{ name }}</a></li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

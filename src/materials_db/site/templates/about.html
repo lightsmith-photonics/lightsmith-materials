@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="wrap page narrow prose">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">About</li></ol></nav>
+  <h1>About {{ brand }}</h1>
+  <p class="lead">{{ brand }} is an open database of optical constants (refractive index n, extinction coefficient k and
+    permittivity ε) in which every dataset is tied to its source publication. It is the materials service of
+    {{ library }}, the open photonics suite.</p>
+  <h2>Where the data come from</h2>
+  <p>The content is the complete <a href="https://refractiveindex.info/">refractiveindex.info</a> database by
+    M. N. Polyanskiy, released into the public domain (CC0 1.0) and imported unchanged at a pinned commit of
+    <a href="{{ rii_repository }}">its repository</a>{% if snapshot %} (<a href="{{ rii_repository }}/tree/{{ snapshot.commit }}"><code>{{ snapshot.commit[:10] }}</code></a>{% if snapshot.imported_at %}, imported {{ snapshot.imported_at.strftime("%Y-%m-%d") }}{% endif %}){% endif %}.
+    Shelves, books, pages and their order are kept, so each page here corresponds to one page there.
+    {{ brand }} is not affiliated with refractiveindex.info. Community contributions are reviewed by moderators before
+    they appear.</p>
+  <h2>How to cite</h2>
+  <p>Cite the reference listed on the dataset's page, and the database:</p>
+  <blockquote>{{ rii_citation }}. <a href="https://doi.org/{{ rii_doi }}">doi:{{ rii_doi }}</a></blockquote>
+  <h2>Conventions</h2>
+  <ul>
+    <li>Wavelengths are vacuum wavelengths. Pages show µm, as the source does; the API uses nm.</li>
+    <li>Time dependence exp(−iωt), so absorbing media have k &gt; 0 and Im ε &gt; 0, the same as the {{ library }} library.</li>
+    <li>Tables are interpolated linearly and never extrapolated; formulas are evaluated exactly.</li>
+    <li>Data are shown as published. Problems found in the source data (k &lt; 0, for example) are flagged on the page.</li>
+  </ul>
+  <h2>Numbers in your code</h2>
+  <p>Every dataset page has copy-paste Python for the {{ library }} library. The REST API serves the same data as JSON,
+    CSV, tab-separated text and YAML: see the <a href="/docs">interactive API reference</a>.</p>
+  <h2>Statistics</h2>
+  <p>{{ "{:,}".format(stats.materials) }} materials, {{ "{:,}".format(stats.datasets) }} datasets and
+    {{ "{:,}".format(stats.references) }} references, {{ "{:,}".format(stats.references_with_doi) }} of them with a DOI.</p>
+  <h2>Licences</h2>
+  <p>The site and API code are MIT-licensed. Each dataset carries its own data licence (the imported data are CC0 1.0).</p>
+</div>
+{% endblock %}

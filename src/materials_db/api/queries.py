@@ -268,6 +268,7 @@ def material_detail(session: Session, m: Material, base_url: str, brand: str = "
         for c in session.scalars(select(CatalogEntry).where(CatalogEntry.material_id == m.id)
                                  .order_by(CatalogEntry.position))]
     out["links"] = {"self": f"{base_url}/v1/materials/{m.public_id}"}
+    out["external_links"] = m.external_links or []
     out["created_at"], out["updated_at"] = m.created_at, m.updated_at
     return out
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>Lightsmith Materials</ShortName>
+  <Description>Search optical constants: refractive index n and extinction coefficient k</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Url type="text/html" template="/search?q={searchTerms}"/>
+</OpenSearchDescription>

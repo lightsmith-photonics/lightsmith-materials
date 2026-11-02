@@ -78,7 +78,8 @@ Each item has these fields:
 
 ### `GET /v1/materials/{material_id}`
 Returns the full material: the complete `description`, the `datasets` list (as `DatasetSummary` objects),
-`source`, `catalog` (the places it is listed in the imported catalog), `links`, `created_at` and `updated_at`.
+`source`, `catalog` (the places it is listed in the imported catalog), `links`, `external_links` (further reading
+from the source database, `[{url, text}]`), `created_at` and `updated_at`.
 
 The default dataset is the one the simulation library uses for that material when there is one, for example
 Johnson and Christy for Au. Otherwise it is the first dataset in catalog order.
@@ -154,7 +155,7 @@ Returns the dataset's values on a grid.
 | `axis` | `wavelength_nm`, `wavelength_um`, `ev`, `wavenumber` | `wavelength_nm` |
 | `min`, `max` | Grid limits in axis units. They are clipped to the data range, and a warning is added. | data range |
 | `points` | 1–20000: a uniform grid in the axis variable | Native points. Formulas: 400 log-spaced points plus the k points, the same sampling as the library. |
-| `format` | `json`, `csv`, `yaml` (or use the `Accept` header) | `json` |
+| `format` | `json`, `csv`, `txt` (tab-separated, added in 0.3), `yaml` (or use the `Accept` header) | `json` |
 | `version` | Any earlier version of the dataset | current |
 
 The JSON response looks like this:
@@ -349,6 +350,16 @@ On approval:
 - version 1 (or N+1) points to the verbatim upload and the submission.
 
 Reviewing a submission that is not pending returns 409.
+
+## Changes in 0.3 (website)
+
+These changes are additive; nothing existing changed.
+- `format=txt` on `/data` and `/compare`: tab-separated text with the same `#` header as the CSV.
+- `external_links` on `GET /v1/materials/{id}`: further reading from the source database (`[{url, text}]`).
+  Migration `0003` adds the column, and the next `import-rii` run fills it.
+- The website is served from the same process, outside `/v1` (see the README). `GET /` still returns the JSON
+  service description unless the client asks for HTML. Unknown non-API paths return an HTML 404 page to browsers;
+  `/v1/…` errors are unchanged.
 
 ## Changes in 0.2 (Lightsmith rename and photonics scope)
 

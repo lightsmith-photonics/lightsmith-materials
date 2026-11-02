@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block head %}<meta name="robots" content="noindex, follow">{% endblock %}
+{% block main %}
+<div class="wrap page">
+  <h1>Search</h1>
+  <form class="big-search" action="/search" method="get" role="search">
+    <label class="sr-only" for="sq">Search the database</label>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="sq" name="q" type="search" value="{{ q }}" placeholder="Material, formula, alias or author" autocomplete="off" spellcheck="false">
+    <label class="sr-only" for="scat">Category</label>
+    <select id="scat" name="category">
+      <option value="">All categories</option>
+      {% for id, name in categories.items() %}<option value="{{ id }}"{% if category == id %} selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary" type="submit">Search</button>
+  </form>
+  {% if materials is not none %}
+  <section class="section" aria-labelledby="h-mat">
+    <h2 id="h-mat">Materials <span class="count">{{ "{:,}".format(materials.total) }}</span></h2>
+    {% if materials["items"] %}
+    <ul class="result-list">
+      {% for m in materials["items"] %}
+      <li><a href="/materials/{{ m.slug }}"><span class="mat-name">{{ (m.name_html or m.name)|sanitize(false) }}</span></a>
+        <span class="muted small">{{ categories[m.category] }} · {{ m.dataset_count }} {{ "dataset" if m.dataset_count == 1 else "datasets" }}{% if m.range_nm %} · {{ m.range_nm[0]|um_range(m.range_nm[1]) }}{% endif %}{% if m.manufacturer %} · supplier datasheet{% endif %}</span>
+        {% if m.description %}<p class="small">{{ m.description|plain|truncate(200) }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% if materials.total > materials["items"]|length %}<p class="muted small">Showing the first {{ materials["items"]|length }}. Refine the search to narrow it down.</p>{% endif %}
+    {% else %}<p class="muted">No materials match “{{ q }}”.</p>{% endif %}
+  </section>
+  {% endif %}
+  {% if datasets is not none and datasets["items"] %}
+  <section class="section" aria-labelledby="h-ds">
+    <h2 id="h-ds">Datasets <span class="count">{{ "{:,}".format(datasets.total) }}</span></h2>
+    <ul class="result-list">
+      {% for d in datasets["items"] %}
+      <li><a href="/materials/{{ d.slug }}">{{ d.material.name }}: {{ d.name }}</a>
+        <span class="muted small">{{ d.type }} · {{ d.range_nm[0]|um_range(d.range_nm[1]) }}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+  {% if refs %}
+  <section class="section" aria-labelledby="h-ref">
+    <h2 id="h-ref">References</h2>
+    <ul class="result-list">
+      {% for r, dss in refs %}
+      <li><span>{{ r.citation }}</span>{% if r.doi %} <a class="small" href="https://doi.org/{{ r.doi }}">doi:{{ r.doi }}</a>{% endif %}
+        <span class="small">Cited by: {% for d in dss %}<a href="/materials/{{ d.slug }}">{{ d.slug }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+  {% if materials is none %}
+  <p class="muted">Search by name (gold), formula (Au, SiO2), alias (TFLN, BK7), or the authors and title of a reference.</p>
+  {% endif %}
+</div>
+{% endblock %}

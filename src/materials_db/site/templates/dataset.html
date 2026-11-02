@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% block head %}
+<script type="application/ld+json">{{ jsonld }}</script>
+{% endblock %}
+{% block main %}
+<div class="wrap page">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol>
+    <li><a href="/">Home</a></li>
+    {% if home_entry %}<li><a href="/browse/{{ home_entry.shelf|urlquote }}">{{ (home_entry.shelf_name or home_entry.shelf)|plain }}</a></li>{% endif %}
+    <li><a href="{{ material_url(m) }}">{{ (m.name_html or m.name)|plain }}</a></li>
+    <li aria-current="page">{{ page_label }}</li>
+  </ol></nav>
+
+  <header class="ds-header">
+    <p class="eyebrow">Optical constants</p>
+    <h1><span class="h1-pre">Refractive index of </span>{{ (m.name_html or m.name)|sanitize(false) }}</h1>
+    {% set page_name = home_entry.page_name if home_entry and home_entry.page_name else ds.name %}
+    <p class="ds-sub">{{ page_name|sanitize(false) }}{% if "µm" not in page_name %}: <span class="nowrap">{{ kinds }} {{ lo|um_range(hi) }}</span>{% endif %}</p>
+    <dl class="facts">
+      <div><dt>Data</dt><dd>{{ ds.data_type }}</dd></div>
+      <div><dt>Range</dt><dd>{{ "%.4g"|format(lo / 1000) }}–{{ "%.4g"|format(hi / 1000) }} µm</dd></div>
+      {% if ds.n_points %}<div><dt>Points</dt><dd>{{ ds.n_points }}</dd></div>{% endif %}
+      {% if ds.temperature_k %}<div><dt>Temperature</dt><dd>{{ "%g"|format(ds.temperature_k) }} K</dd></div>{% endif %}
+      {% if ds.optical_axis %}<div><dt>Optical axis</dt><dd>{{ ds.optical_axis }}</dd></div>{% endif %}
+      {% if ds.state %}<div><dt>State</dt><dd>{{ ds.state }}</dd></div>{% endif %}
+      <div><dt>Licence</dt><dd><a href="{{ detail.license_info.url }}">{{ ds.license_id }}</a></dd></div>
+      {% if library_entry %}<div><dt>{{ library }}</dt><dd><span class="badge badge-accent">bundled{% if library_entry.default %}, default{% endif %}</span></dd></div>{% endif %}
+    </dl>
+    {% if detail.anisotropy %}
+    <p class="axes">{{ detail.anisotropy.kind|capitalize }} crystal, axes:
+      {% for ax, ref in detail.anisotropy.axes.items() %}{% if ref.id == ds.public_id %}<strong class="chip chip-on">{{ ax }}</strong>{% else %}<a class="chip" href="/materials/{{ ref.slug }}">{{ ax }}</a>{% endif %}{% endfor %}
+    </p>
+    {% endif %}
+  </header>
+
+  <div class="ds-layout">
+    <div class="ds-main">
+      <section class="card" aria-labelledby="h-plot">
+        <div class="card-head">
+          <h2 id="h-plot" class="sr-only">Plot</h2>
+          <div class="seg" role="group" aria-label="Quantity">
+            <button type="button" aria-pressed="true" data-q="nk">n, k</button>
+            <button type="button" aria-pressed="false" data-q="eps">ε₁, ε₂</button>
+            <button type="button" aria-pressed="false" data-q="alpha">α</button>
+          </div>
+          <div class="plot-opts">
+            <label>Axis <select data-axis>
+              <option value="um">λ (µm)</option><option value="nm">λ (nm)</option>
+              <option value="ev">E (eV)</option><option value="wn">ν̃ (cm⁻¹)</option>
+            </select></label>
+            <label class="check"><input type="checkbox" data-logx> Log x</label>
+            <label class="check"><input type="checkbox" data-logy> Log y</label>
+          </div>
+        </div>
+        <div class="chart" id="nk-chart" role="img" aria-label="n and k of {{ m.name }} versus wavelength, {{ lo|um_range(hi) }}">
+          <noscript><p class="muted">The plot needs JavaScript; the data table below has every value.</p></noscript>
+        </div>
+        <script type="application/json" id="plot-data">{{ plot }}</script>
+        <p class="muted small">Click the plot to set the calculator wavelength.{% for note in disp.notes %} Note: {{ note }}.{% endfor %}</p>
+      </section>
+
+      <section class="card" aria-labelledby="h-calc" id="calculator">
+        <div class="card-head"><h2 id="h-calc">At one wavelength</h2></div>
+        <form class="calc-form" data-calc onsubmit="return false">
+          <label for="wl">Wavelength</label>
+          <div class="input-unit">
+            <input id="wl" type="number" step="any" min="0" value="{{ wl0 }}" inputmode="decimal" data-wl>
+            <select data-wl-unit aria-label="Wavelength unit"><option value="um">µm</option><option value="nm">nm</option><option value="ev">eV</option><option value="wn">cm⁻¹</option></select>
+          </div>
+          <span class="muted small">Range {{ "%.4g"|format(lo / 1000) }}–{{ "%.4g"|format(hi / 1000) }} µm</span>
+        </form>
+        <div class="calc-grid" aria-live="polite">
+          <dl>
+            <dt>Refractive index <var>n</var></dt><dd data-out="n">{{ calc.n|num }}</dd>
+            <dt>Extinction coefficient <var>k</var></dt><dd data-out="k">{{ calc.k|num }}</dd>
+          </dl>
+          <dl>
+            <dt>Permittivity <var>ε</var><sub>1</sub></dt><dd data-out="eps1">{{ calc.eps1|num }}</dd>
+            <dt>Permittivity <var>ε</var><sub>2</sub></dt><dd data-out="eps2">{{ calc.eps2|num }}</dd>
+          </dl>
+          <dl>
+            <dt>Absorption coefficient <var>α</var></dt><dd><span data-out="alpha">{{ calc.alpha|num }}</span> cm⁻¹</dd>
+            <dt>Penetration depth <var>δ</var> = λ/(2πk)</dt><dd><span data-out="skin">{{ calc.skin_depth_nm|num }}</span> nm</dd>
+          </dl>
+          <dl>
+            <dt>Abbe number <var>V</var><sub>d</sub></dt><dd data-out="abbe">{{ abbe|num(5) if abbe is not none else "—" }}</dd>
+            <dt>Chromatic dispersion d<var>n</var>/d<var>λ</var></dt><dd><span data-out="dndl">{{ calc.dn_dl|num }}</span> µm⁻¹</dd>
+          </dl>
+          <dl>
+            <dt>Group index <var>n</var><sub>g</sub></dt><dd data-out="ng">{{ calc.ng|num }}</dd>
+            <dt>Group velocity dispersion</dt><dd><span data-out="gvd">{{ calc.gvd|num }}</span> fs²/mm</dd>
+          </dl>
+          <dl>
+            <dt>Dispersion parameter <var>D</var></dt><dd><span data-out="D">{{ calc.D|num }}</span> ps/(nm·km)</dd>
+            <dt>Photon energy</dt><dd><span data-out="ev">{{ (1.239841984 / wl0)|num }}</span> eV</dd>
+          </dl>
+        </div>
+        <p class="muted small">ε = (n + ik)², α = 4πk/λ, n<sub>g</sub> = n − λ dn/dλ, GVD = λ³/(2πc²) d²n/dλ²,
+          D = −(λ/c) d²n/dλ². Group-velocity dispersion is given for formula data only.</p>
+      </section>
+
+      {% include "_library.html" %}
+
+      {% if formula %}
+      <section class="card" aria-labelledby="h-formula" id="formula">
+        <div class="card-head"><h2 id="h-formula">Dispersion formula</h2><span class="muted small">{{ formula_text.get(formula.number, formula.name) }} (formula {{ formula.number }}), λ in µm</span></div>
+        <div class="formula-box">{{ formula.mathml }}</div>
+        <p class="muted small">Valid from {{ formula.range_um[0] }} to {{ formula.range_um[1] }} µm.</p>
+        <details>
+          <summary>Coefficients as stored</summary>
+          <table class="coef"><thead><tr><th scope="col">C<sub>i</sub></th><th scope="col">Value</th></tr></thead><tbody>
+          {% for c in formula.coefficients %}<tr><td>C{{ loop.index }}</td><td class="mono">{{ c }}</td></tr>{% endfor %}
+          </tbody></table>
+        </details>
+      </section>
+      {% endif %}
+
+      {% if ds.comments or conditions or properties or ds.thermo_optic or detail.quality_flags %}
+      <section class="card" aria-labelledby="h-notes">
+        <div class="card-head"><h2 id="h-notes">Comments and conditions</h2></div>
+        {% if ds.comments %}<div class="comments prose">{{ ds.comments|paragraphs }}</div>{% endif %}
+        {% if conditions %}
+        <h3>Conditions</h3>
+        <dl class="kv">{% for k, v in conditions.items() %}<dt>{{ k|replace("_", " ") }}</dt><dd>{{ v }}{% if k in ("temperature", "temerature") %} K{% endif %}</dd>{% endfor %}</dl>
+        {% endif %}
+        {% if properties %}
+        <h3>Properties</h3>
+        <dl class="kv">{% for k, v in properties.items() %}<dt>{{ k|replace("_", " ") }}</dt><dd>{% if v is mapping %}{% for kk, vv in v.items() %}{{ kk }}: {{ vv }}{% if not loop.last %}; {% endif %}{% endfor %}{% elif v is iterable and v is not string %}{% for item in v %}{% if item is mapping %}{% for kk, vv in item.items() %}{{ kk|replace("_", " ") }}: {{ vv }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}{{ item }}{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}{% else %}{{ v }}{% endif %}</dd>{% endfor %}</dl>
+        {% endif %}
+        {% if ds.thermo_optic %}
+        <h3>Thermo-optic coefficient</h3>
+        <ul class="plain">{% for t in ds.thermo_optic %}<li>
+          {% if t.model == "schott" %}Schott thermal-dispersion model (reference temperature {{ t.reference_temperature_k }} K):
+            {% for wl, v in (t.dn_dT_at or {}).items() %}dn/dT = {{ v|num(3) }} K⁻¹ at {{ wl }} nm{% if not loop.last %}, {% endif %}{% endfor %}
+          {% else %}dn/dT = {{ t.dn_dT|num(3) }} K⁻¹{% if t.wavelength_nm %} at {{ t.wavelength_nm|num }} nm{% endif %}{% if t.temperature_k %}, {{ t.temperature_k|num }} K{% endif %}{% if t.direction %} ({{ t.direction }}){% endif %}{% endif %}
+        </li>{% endfor %}</ul>
+        {% endif %}
+        {% if detail.quality_flags %}
+        <div class="notice" role="note"><strong>Notes on the source data</strong> (kept exactly as published):
+          <ul>{% for f in detail.quality_flags %}<li>{{ f }}</li>{% endfor %}</ul></div>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      <section class="card" aria-labelledby="h-refs" id="references">
+        <div class="card-head"><h2 id="h-refs">References</h2></div>
+        {% if ver.references_html %}
+        <div class="refs prose">{{ ver.references_html|sanitize }}</div>
+        {% else %}
+        <ol class="refs">{% for r in detail.references if r.role != "database" %}<li>{{ r.formatted }}{% if r.doi %} <a href="https://doi.org/{{ r.doi }}">doi:{{ r.doi }}</a>{% endif %}</li>{% endfor %}</ol>
+        {% endif %}
+        {% set dois = detail.references|selectattr("doi")|rejectattr("role", "equalto", "database")|list %}
+        {% if dois %}
+        <ul class="doi-list">{% for r in dois %}<li><a href="https://doi.org/{{ r.doi }}" class="chip">doi:{{ r.doi }}</a>{% if r.title %} <span class="small muted">{{ r.title }}{% if r.journal %}, {{ r.journal }}{% endif %}{% if r.year %} ({{ r.year }}){% endif %}</span>{% endif %}</li>{% endfor %}</ul>
+        {% endif %}
+        <div class="cite">
+          <p class="small"><strong>Cite</strong> <button class="link-btn" type="button" data-copy="{{ detail.citation }}">copy</button></p>
+          <p class="small muted">{{ detail.citation }}</p>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="h-data" id="data">
+        <div class="card-head">
+          <h2 id="h-data">Data</h2>
+          <span class="muted small">{% if published %}{{ rows|length }} rows as published{% else %}Computed on {{ rows|length }} wavelengths, the same grid as the API and the library{% endif %}</span>
+        </div>
+        <div class="downloads">
+          <a class="btn" href="{{ api }}/data?format=csv" download>CSV <span class="muted">comma separated</span></a>
+          <a class="btn" href="{{ api }}/data?format=txt" download>TXT <span class="muted">tab separated</span></a>
+          <a class="btn" href="{{ api }}/data?format=yaml" download>YAML <span class="muted">n, k</span></a>
+          {% if ver.source_file_id %}<a class="btn" href="{{ api }}/source" download>Full database record <span class="muted">original YAML</span></a>{% endif %}
+          <a class="btn" href="{{ api }}/data?quantity=all&amp;format=csv" download>All quantities <span class="muted">CSV</span></a>
+          <a class="btn" href="{{ api }}">JSON <span class="muted">metadata</span></a>
+        </div>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Data table">
+          <table class="data-table">
+            <caption class="sr-only">{{ m.name }}, {{ page_label }}: n and k versus wavelength</caption>
+            <thead><tr><th scope="col">λ (µm)</th>{% if disp.has_n %}<th scope="col">n</th>{% endif %}{% if show_k %}<th scope="col">k</th>{% endif %}</tr></thead>
+            <tbody>
+            {% for w, n, k in rows[:2000] %}<tr><td>{{ w }}</td>{% if disp.has_n %}<td>{{ n }}</td>{% endif %}{% if show_k %}<td>{{ k }}</td>{% endif %}</tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if rows|length > 2000 %}<p class="muted small">Showing 2,000 of {{ rows|length }} rows. Download the CSV for all of them.</p>{% endif %}
+      </section>
+
+      {% if disp.has_n %}
+      <section class="card" aria-labelledby="h-trans" id="transmission" data-transmission>
+        <div class="card-head"><h2 id="h-trans">Optical transmission calculator</h2><span class="muted small">Free-standing sample in vacuum, normal incidence</span></div>
+        <form class="tool-form" onsubmit="return false">
+          <label>Wavelength (µm) <input type="number" step="any" min="0" value="{{ wl0 }}" data-t-wl></label>
+          <label>Thickness <span class="input-unit"><input type="number" step="any" min="0" value="1" data-t-d>
+            <select data-t-unit aria-label="Thickness unit"><option value="1e-3">nm</option><option value="1">µm</option><option value="1e3" selected>mm</option><option value="1e4">cm</option><option value="1e6">m</option><option value="1e9">km</option></select></span></label>
+          <fieldset><legend>Method</legend>
+            <label class="check"><input type="radio" name="t-method" value="internal"> Internal transmission only</label>
+            <label class="check"><input type="radio" name="t-method" value="single"> Single pass with Fresnel losses</label>
+            <label class="check"><input type="radio" name="t-method" value="incoherent" checked> Incoherent sum of internal reflections</label>
+            <label class="check"><input type="radio" name="t-method" value="coherent"> Coherent sum of fields (thin films)</label>
+          </fieldset>
+        </form>
+        <dl class="kv-inline" aria-live="polite"><dt>Transmittance T</dt><dd data-t-out="T">—</dd><dt>Reflectance R</dt><dd data-t-out="R">—</dd></dl>
+        <div class="chart chart-sm" data-t-chart role="img" aria-label="Transmittance and reflectance versus wavelength"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-fresnel" id="fresnel" data-fresnel>
+        <div class="card-head"><h2 id="h-fresnel">Fresnel reflection calculator</h2></div>
+        <form class="tool-form" onsubmit="return false">
+          <label>Wavelength (µm) <input type="number" step="any" min="0" value="{{ wl0 }}" data-f-wl></label>
+          <label>Angle of incidence (°) <input type="number" step="any" min="0" max="90" value="45" data-f-angle></label>
+          <fieldset><legend>Direction</legend>
+            <label class="check"><input type="radio" name="f-dir" value="in" checked> In (from vacuum)</label>
+            <label class="check"><input type="radio" name="f-dir" value="out"> Out (into vacuum)</label>
+          </fieldset>
+        </form>
+        <dl class="kv-inline" aria-live="polite">
+          <dt>R<sub>p</sub></dt><dd data-f-out="Rp">—</dd><dt>R<sub>s</sub></dt><dd data-f-out="Rs">—</dd><dt>R = (R<sub>p</sub>+R<sub>s</sub>)/2</dt><dd data-f-out="R">—</dd>
+          <dt>Phase φ<sub>p</sub></dt><dd data-f-out="phip">—</dd><dt>Phase φ<sub>s</sub></dt><dd data-f-out="phis">—</dd>
+          <dt>Brewster angle θ<sub>B</sub></dt><dd data-f-out="brewster">—</dd><dt>Critical angle θ<sub>C</sub></dt><dd data-f-out="critical">—</dd>
+        </dl>
+        <div class="chart chart-sm" data-f-chart role="img" aria-label="Reflectance versus angle of incidence"></div>
+      </section>
+      {% endif %}
+    </div>
+
+    <aside class="ds-side" aria-label="{{ m.name }} datasets and material">
+      <section class="card side-card">
+        <h2 class="h-side"><a href="{{ material_url(m) }}">{{ (m.name_html or m.name)|sanitize(false) }}</a>: all datasets</h2>
+        <div class="side-scroll">{% include "_pagelist.html" %}</div>
+      </section>
+      {% if material_about or m.external_links %}
+      <section class="card side-card prose small">
+        <h2 class="h-side">About {{ m.name }}</h2>
+        <div class="clamp" data-clamp>{{ material_about }}</div>
+        {% if m.external_links %}<ul class="ext-links">{% for l in m.external_links %}<li><a href="{{ l.url }}" rel="noopener nofollow">{{ l.text }}</a></li>{% endfor %}</ul>{% endif %}
+        <p><a href="{{ material_url(m) }}">More about {{ m.name }} →</a></p>
+      </section>
+      {% endif %}
+      {% if listed|length > 1 %}
+      <section class="card side-card small">
+        <h2 class="h-side">Listed in</h2>
+        <ul class="plain">{% for c in listed %}<li><a href="{{ book_url(c.shelf, c.book) }}">{{ (c.shelf_name or c.shelf)|plain }} › {{ (c.book_name or c.book)|plain }}</a></li>{% endfor %}</ul>
+      </section>
+      {% endif %}
+      <section class="card side-card small">
+        <h2 class="h-side">Provenance</h2>
+        <dl class="kv kv-tight">
+          <dt>Version</dt><dd>{{ ds.current_version }}{% if ver.source_commit %} (snapshot <code>{{ ver.source_commit[:7] }}</code>){% endif %}</dd>
+          {% if src.url %}<dt>Source page</dt><dd><a href="{{ src.url }}" rel="nofollow">refractiveindex.info</a></dd>{% endif %}
+          {% if src.raw_url %}<dt>Original file</dt><dd><a href="{{ src.raw_url }}" rel="nofollow">{{ src.path }}</a></dd>{% endif %}
+          <dt>ID</dt><dd><code>{{ ds.public_id }}</code></dd>
+          <dt>API</dt><dd><a href="{{ api }}"><code>{{ api }}</code></a></dd>
+        </dl>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ static_url('dataset.js') }}" defer></script>{% endblock %}

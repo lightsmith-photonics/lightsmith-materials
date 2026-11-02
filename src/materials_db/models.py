@@ -71,6 +71,7 @@ class Material(Base):
     group: Mapped[str | None] = mapped_column(String(200))  # e.g. catalog divider "Alcohols", "Optical glass"
     manufacturer: Mapped[str | None] = mapped_column(String(200))
     description: Mapped[str | None] = mapped_column(Text)
+    external_links: Mapped[list[Any]] = mapped_column(default=list)  # [{"url", "text"}] from the source's about.yml
     search_text: Mapped[str] = mapped_column(Text, default="")
     source: Mapped[str] = mapped_column(String(32))  # "rii" | "community"
     source_key: Mapped[str | None] = mapped_column(String(500), unique=True)  # e.g. "rii:main/Au"

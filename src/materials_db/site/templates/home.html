@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block main %}
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Open optical constants database</p>
+      <h1 class="hero-title">Refractive index, extinction coefficient and permittivity for {{ "{:,}".format(stats.materials) }} materials.</h1>
+      <p class="lead">{{ "{:,}".format(stats.datasets) }} datasets, each with plots, its data, dispersion formula, references and a
+        calculator. Every one loads into the {{ library }} photonics library in one line of Python.</p>
+      <form class="big-search" action="/search" method="get" role="search">
+        <label class="sr-only" for="q">Search the database</label>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" name="q" type="search" placeholder="Material, formula or author: Si, SiO2, Johnson…" autocomplete="off"
+               data-typeahead autofocus spellcheck="false">
+        <button class="btn btn-primary" type="submit">Search</button>
+      </form>
+      <p class="quick-links">Popular:
+        {% for label, slug in featured %}<a href="/materials/{{ slug }}">{{ label }}</a>{% if not loop.last %}<span aria-hidden="true"> · </span>{% endif %}{% endfor %}
+      </p>
+    </div>
+    <aside class="hero-code card" aria-label="Load a material in Python">
+      <div class="code-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="muted small">python</span></div>
+<pre class="code"><code><span class="tok-k">import</span> lightsmith <span class="tok-k">as</span> ls
+
+<span class="tok-c"># any dataset in this database</span>
+au = ls.fetch_refractiveindex(<span class="tok-s">"main"</span>, <span class="tok-s">"Au"</span>, <span class="tok-s">"Johnson"</span>)
+
+sim = ls.Simulation(
+    particles=[ls.Particle(shape=ls.Sphere(radius_nm=<span class="tok-n">40</span>), material=au)],
+    medium_index=<span class="tok-n">1.33</span>,
+    wavelengths=ls.WavelengthRange(start_nm=<span class="tok-n">400</span>, stop_nm=<span class="tok-n">800</span>, num=<span class="tok-n">81</span>),
+)
+res = ls.solve(sim)   <span class="tok-c"># exact Mie, or DDA, FDTD, BEM…</span></code></pre>
+      <div class="hero-code-foot">
+        <code class="install" data-copy="{{ cfg.library_install }}">{{ cfg.library_install }}</code>
+        <a class="btn" href="{{ cfg.docs_url }}/quickstart/">Quick start →</a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="wrap section">
+  <div class="section-head">
+    <h2>Browse by category</h2>
+    <a href="/browse">Browse the catalog shelves →</a>
+  </div>
+  <ul class="cat-grid">
+    {% for c in cats %}
+    <li class="card cat-card">
+      <h3><a href="/categories/{{ c.id }}">{{ c.name }}</a></h3>
+      <p class="muted small">{{ "{:,}".format(c.research_count) }} materials{% if c.supplier_count %} · {{ "{:,}".format(c.supplier_count) }} supplier datasheets{% endif %}</p>
+      {% if c.featured %}
+      <p class="chips">{% for f in c.featured[:6] %}<a class="chip" href="/materials/{{ f.slug }}">{{ f.formula or f.name }}</a>{% endfor %}</p>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="wrap section">
+  <div class="section-head"><h2>The catalog</h2></div>
+  {% for sec in sections %}
+  <h3 class="sec-label">{{ sec.name }}</h3>
+  <ul class="shelf-grid">
+    {% for sh in sec.shelves %}
+    <li><a class="card shelf-card" href="/browse/{{ sh.shelf|urlquote }}">
+      <span class="shelf-title">{{ sh.title }}</span>
+      {% if sh.subtitle %}<span class="muted small">{{ sh.subtitle }}</span>{% endif %}
+      <span class="shelf-meta">{{ "{:,}".format(sh.books) }} books · {{ "{:,}".format(sh.pages) }} pages</span>
+    </a></li>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+</section>
+
+<section class="wrap section">
+  <div class="cta-band card">
+    <div>
+      <h2>From a refractive index to a simulation</h2>
+      <p>{{ library }} is an open-source (MIT) photonics suite: Mie, T-matrix, BEM, DDA, FDTD, RCWA, TMM, mode solvers and
+        inverse design behind one typed spec, on CPU or GPU. Every material on this site plugs straight into it, with its
+        citation attached.</p>
+    </div>
+    <div class="cta-actions">
+      <a class="btn btn-primary" href="{{ cfg.docs_url }}/install/">Install {{ library }}</a>
+      <a class="btn" href="{{ cfg.studio_url }}/">Open Studio</a>
+      <a class="btn" href="{{ cfg.community_url }}/">Join the community</a>
+    </div>
+  </div>
+</section>
+
+<section class="wrap section stats-row" aria-label="Database statistics">
+  <div><span class="stat">{{ "{:,}".format(stats.materials) }}</span><span class="muted small">materials</span></div>
+  <div><span class="stat">{{ "{:,}".format(stats.datasets) }}</span><span class="muted small">datasets</span></div>
+  <div><span class="stat">{{ "{:,}".format(stats.references) }}</span><span class="muted small">references</span></div>
+  <div><span class="stat">{{ "{:,}".format(stats.references_with_doi) }}</span><span class="muted small">with a DOI</span></div>
+  {% if snapshot %}<div><span class="stat mono">{{ snapshot.commit[:7] }}</span><span class="muted small">source snapshot</span></div>{% endif %}
+</section>
+{% endblock %}

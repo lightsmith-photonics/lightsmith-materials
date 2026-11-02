@@ -1,0 +1,24 @@
+{# A material's catalog pages, grouped by the source's dividers. Expects `groups`; optional `current`, `compare_ids`. #}
+{% for g in groups %}
+<section class="page-group">
+  {% if g.name %}<h3 class="divider">{{ g.name|sanitize(false) }}</h3>{% endif %}
+  <ul class="ds-list">
+    {% for p in g.pages %}
+    {% set is_current = current is defined and current == p.ds.id %}
+    <li{% if is_current %} class="current"{% endif %}>
+      {% if compare_ids is defined %}
+      <input type="checkbox" class="cmp" value="{{ p.ds.public_id }}" aria-label="Plot {{ p.name|plain }}"{% if p.ds.public_id in compare_ids %} checked{% endif %}{% if p.ds.data_type == "tabulated k" %} data-k-only{% endif %} hidden>
+      {% endif %}
+      <a href="{{ dataset_url(p.ds) }}"{% if is_current %} aria-current="page"{% endif %}>
+        <span class="ds-name">{{ p.name|sanitize(false) }}</span>
+        <span class="ds-meta">
+          <span class="badge">{{ "k" if p.ds.data_type == "tabulated k" else ("n,k" if p.ds.has_k else "n") }}</span>
+          <span>{{ p.ds.wavelength_min_nm|um_range(p.ds.wavelength_max_nm) }}</span>
+          {% if p.is_default %}<span class="badge badge-accent" title="The dataset the {{ library }} library uses by default">default</span>{% endif %}
+        </span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endfor %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="wrap page">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol>
+    <li><a href="/">Home</a></li>
+    {% if home_shelf %}<li><a href="/browse/{{ home_shelf|urlquote }}">{{ (home_shelf_name or home_shelf)|plain }}</a></li>
+    {% else %}<li><a href="/categories/{{ m.category }}">{{ categories[m.category] }}</a></li>{% endif %}
+    <li aria-current="page">{{ (m.name_html or m.name)|plain }}</li>
+  </ol></nav>
+  <header class="mat-header">
+    <h1>{{ (m.name_html or m.name)|sanitize(false) }}</h1>
+    <p class="chips">
+      <a class="chip" href="/categories/{{ m.category }}">{{ categories[m.category] }}</a>
+      {% for t in m.tags or [] %}<span class="chip chip-quiet">{{ t }}</span>{% endfor %}
+      {% if m.manufacturer %}<span class="chip chip-quiet">Supplier: {{ m.manufacturer }}</span>{% endif %}
+    </p>
+    <p class="muted">{{ entries|length }} {{ "dataset" if entries|length == 1 else "datasets" }}{% if lo %}, together covering {{ lo|um_range(hi) }}{% endif %}.
+      {% if default %}Default: <a href="{{ dataset_url(default) }}">{{ default.name }}</a>.{% endif %}</p>
+  </header>
+
+  <div class="mat-layout">
+    <section class="card" aria-labelledby="h-cmp">
+      <div class="card-head">
+        <h2 id="h-cmp">Compare datasets</h2>
+        <div class="seg" role="group" aria-label="Quantity">
+          <button type="button" aria-pressed="true" data-cmp-q="n">n</button>
+          <button type="button" aria-pressed="false" data-cmp-q="k">k</button>
+        </div>
+      </div>
+      <div class="chart" id="cmp-chart" data-compare data-ids="{{ compare_ids|join(',') }}" role="img"
+           aria-label="Refractive index of {{ m.name }} for several datasets">
+        <noscript><p class="muted">The comparison plot needs JavaScript. Each dataset page has its own data table.</p></noscript>
+      </div>
+      <p class="muted small" data-cmp-hint>Tick datasets in the list to add them to the plot (up to 12).</p>
+    </section>
+    <section aria-labelledby="h-pages" class="pages-col">
+      <h2 id="h-pages">Datasets</h2>
+      {% include "_pagelist.html" %}
+    </section>
+  </div>
+
+  {% include "_library.html" %}
+
+  {% if m.description or aliases or m.external_links %}
+  <section class="section prose about-mat" aria-labelledby="h-about">
+    <h2 id="h-about">About {{ m.name }}</h2>
+    {{ material_about }}
+    {% if aliases %}<p><strong>Other names:</strong> {% for a in aliases %}{{ a|sanitize(false) }}{% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+    {% if m.external_links %}
+    <ul class="ext-links">{% for l in m.external_links %}<li><a href="{{ l.url }}" rel="noopener nofollow">{{ l.text }}</a></li>{% endfor %}</ul>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if others %}
+  <section class="section" aria-labelledby="h-also">
+    <h2 id="h-also">Also listed in</h2>
+    <ul class="chips">{% for shelf, shelf_name, book, book_name in others %}<li><a class="chip" href="{{ book_url(shelf, book) }}">{{ shelf_name|plain }} › {{ (book_name or book)|plain }}</a></li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+
+  <p class="muted small api-line">API: <a href="/v1/materials/{{ m.public_id }}"><code>/v1/materials/{{ m.public_id }}</code></a> · slug <code>{{ m.slug }}</code></p>
+</div>
+{% endblock %}

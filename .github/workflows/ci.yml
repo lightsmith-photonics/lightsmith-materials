@@ -28,9 +28,9 @@ jobs:
       - name: requirements.lock matches uv.lock
         run: uv export --frozen --no-dev --no-emit-project --format requirements-txt -o /tmp/req.lock && diff <(grep -v '^#' requirements.lock) <(grep -v '^#' /tmp/req.lock)
       - name: unit tests (SQLite)
-        run: uv run pytest -q
+        run: uv run --frozen pytest -q  # --frozen: the ../lightsmith path source is not checked out in CI
       - name: unit tests (Postgres)
-        run: uv run pytest -q
+        run: uv run --frozen pytest -q  # --frozen: the ../lightsmith path source is not checked out in CI
         env:
           TEST_DATABASE_URL: postgresql+psycopg://test:test@localhost:5432/test
 
