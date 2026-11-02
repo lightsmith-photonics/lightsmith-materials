@@ -15,6 +15,7 @@ project is cited as the data source; it is not affiliated with Lightsmith.
 | | |
 | --- | --- |
 | API reference | [API.md](API.md), plus the live OpenAPI document at `/openapi.json` (interactive docs at `/docs`) |
+| Website | Server-rendered pages at `/` for every material and dataset (see [Website](#website)) |
 | Port and prefix | 8100, `/v1` |
 | Code license | MIT ([LICENSE](LICENSE)). Each dataset carries its own data license (CC0-1.0, CC-BY-4.0, …). |
 | Branding | `BRAND_NAME`, `LIBRARY_NAME` (see [.env.example](.env.example)) |
@@ -75,6 +76,72 @@ uv run --extra library pytest   # with the sibling ../lightsmith library: also r
 | `fit-models [--category metal,semiconductor,phase_change]` | Precomputes and caches Drude–Lorentz fits. Needs the library. |
 | `token --role moderator` | Mints a platform-style JWT for development. |
 | `serve`, `stats` | Runs the API; prints counts and the imported snapshot. |
+
+## Website
+
+The same process serves a public website at `/` (production: `materials.lightsmith.dev`): every shelf, book and
+page of the imported catalog, browsable as on refractiveindex.info, with search, light and dark themes, and
+layouts that work on phones. It is server-rendered (FastAPI + Jinja2, in `src/materials_db/site`), with a little
+dependency-free JavaScript for the plots and calculators. It reads the database directly, not over HTTP.
+
+| URL | Page |
+| --- | --- |
+| `/` | Search, categories and shelves. API clients that do not ask for HTML still get the JSON service description. |
+| `/browse`, `/browse/{shelf}`, `/browse/{shelf}/{book}` | The catalog, with the source's dividers and order |
+| `/materials/{material}` | A material (a book): all its pages, a comparison plot, About text and links |
+| `/materials/{material}/{dataset}` | A dataset (a page): the canonical URL, described below |
+| `/categories/{id}`, `/search?q=`, `/about` | Browsing by category, search (materials, datasets, references) |
+| `/sitemap.xml`, `/robots.txt` | Every material and dataset URL, for search engines |
+
+Each dataset page has:
+- plots of n and k, ε₁ and ε₂, or α, against λ, energy or wavenumber, on linear or log axes;
+- the calculator: n, k, ε, α, penetration depth, Abbe number, dn/dλ, group index, GVD and D at any wavelength;
+- the transmission calculator (four methods) and the Fresnel reflection calculator;
+- the dispersion formula as MathML with its coefficients, the data table, comments, conditions, properties and
+  references with DOIs;
+- CSV, tab-separated and YAML downloads, plus the original file;
+- copy-paste Python for the Lightsmith library (`LibraryMaterial` when the library bundles the dataset,
+  `fetch_refractiveindex` pinned to the imported commit, `Tabulated` from this API, a `Simulation`, and
+  `DrudeLorentz` where a model exists), an "Open in Studio" link, and links to the docs and Community;
+- `schema.org/Dataset` metadata, a canonical URL and a meta description.
+
+The plots and calculators compute n and k exactly as the API does. A test runs `static/dataset.js` under Node and
+compares it with the server code for every fixture dataset.
+
+Other addresses redirect (301) to the canonical page: `/?shelf=main&book=Au&page=Johnson` (the refractiveindex.info
+form), `/browse/{shelf}/{book}/{page}`, material and dataset aliases (`/materials/gold`, `/materials/au/jc`) and
+public IDs (`/datasets/ds_…`). HTML is sent with `Cache-Control: public, max-age=300, stale-while-revalidate=86400`,
+so Cloudflare can cache it. Static files have a content hash in their URL and are cached as immutable.
+
+**Why it lives here.** The site is a read-only view of this database. Keeping it in this service means:
+- one deployable instead of a second app and container on a shared server;
+- pages built from the same queries and numbers as the API, so the two cannot drift apart;
+- downloads and calculators on the same origin as the API.
+
+Community (Next.js) keeps the features that need accounts, such as contributions and moderation, and the site
+links to them.
+
+**Configuration** (see `.env.example`):
+- `PUBLIC_BASE_URL`: used for canonical URLs, the sitemap and the code snippets. Set it to
+  `https://materials.lightsmith.dev` in production.
+- `DOCS_URL`, `STUDIO_URL`, `COMMUNITY_URL`, `LIBRARY_REPO_URL` and `LIBRARY_INSTALL`: the outbound links.
+- `SITE_ENABLED=false`: serves the API alone.
+
+Studio opens `/materials/{dataset}/studio.json` (a sphere made of the dataset) through its `?spec_url=` deep link.
+
+Run it locally like the API (`scripts/dev.sh`, or `uv run materials-db serve`) and open http://localhost:8100.
+
+**Checked against refractiveindex.info** (2026-11-02, 14 pages: Au/Johnson, Ag/Johnson, SiO2/Malitson,
+Si/Green-2008, LiNbO3/Zelmon-e, Si3N4/Luke, H2O/Hale, TiO2/Devore-o, Al2O3/Malitson-o, BaF2/Bosomworth-5K,
+SCHOTT N-BK7, 3d/metals/gold, ethanol/Rheims, air/Ciddor). The values were read from its own calculator at 3–4
+wavelengths per page.
+- n, k, ε₁, ε₂, α, Vd, dn/dλ and n_g agree with its printed values on every page.
+- GVD and D agree to within 4×10⁻⁵ relative. The exception is air, where its numerical second derivative is off
+  and ours matches the analytic one.
+- References, DOIs and page names agree. The differences are upstream edits made after the pinned snapshot: a few
+  reworded comments, `direction` renamed to `optical_component` in conditions, and two newer LiNbO₃ pages.
+  Moving `RII_COMMIT` forward picks these up.
+- Every one of the 5,780 sitemap URLs renders: median 0.11 s, p95 0.27 s.
 
 ## What is in the database
 

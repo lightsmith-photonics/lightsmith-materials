@@ -163,6 +163,8 @@ class MaterialDetail(MaterialSummary):
     source: dict[str, Any]
     catalog: list[dict[str, Any]]
     links: dict[str, str]
+    external_links: list[dict[str, str]] = Field(
+        [], description="Further reading on the material from the source database ({url, text})")
     created_at: datetime
     updated_at: datetime
 

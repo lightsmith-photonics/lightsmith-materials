@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="wrap page">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/browse">Browse</a></li><li><a href="/browse/{{ shelf|urlquote }}">{{ shelf_name|plain }}</a></li><li aria-current="page">{{ book_name|plain }}</li></ol></nav>
+  <h1>{{ book_name|sanitize(false) }}</h1>
+  <p class="muted">{{ count }} {{ "page" if count == 1 else "pages" }} on the shelf {{ shelf_name|plain }}.</p>
+  {% if count > 15 %}<input class="filter" type="search" placeholder="Filter…" data-filter="#pages" autocomplete="off" aria-label="Filter pages">{% endif %}
+  <div id="pages">
+  {% for g in groups %}
+    <section class="page-group" data-filter-group>
+      {% if g.name %}<h2 class="divider">{{ g.name|sanitize(false) }}</h2>{% endif %}
+      <ul class="ds-list">
+        {% for p in g.pages %}
+        <li data-filter-item><a href="{{ dataset_url(p.ds) }}">
+          <span class="ds-name">{{ p.name|sanitize(false) }}</span>
+          <span class="ds-meta"><span>{{ p.ds.material.name }}</span><span>{{ p.ds.wavelength_min_nm|um_range(p.ds.wavelength_max_nm) }}</span></span>
+        </a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endfor %}
+  </div>
+  <p class="empty muted" hidden data-filter-empty>No pages match.</p>
+</div>
+{% endblock %}

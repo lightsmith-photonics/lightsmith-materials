@@ -12,6 +12,7 @@ from .. import __version__
 from ..config import RII_CITATION, Settings, get_settings
 from ..db import Database, schema_status
 from ..references import DoiResolver
+from .. import site
 from . import routes_datasets, routes_materials, routes_submissions
 
 DESCRIPTION = f"""
@@ -56,7 +57,10 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
                                        "Content-Disposition"])
 
     @app.exception_handler(StarletteHTTPException)
-    async def http_error(_: Request, exc: StarletteHTTPException):
+    async def http_error(request: Request, exc: StarletteHTTPException):
+        html_page = not request.url.path.startswith("/v1/") and site.wants_html(request)
+        if settings.site_enabled and exc.status_code == 404 and html_page:
+            return site.not_found_page(request)
         return JSONResponse(_error_body(exc.status_code, exc.detail), status_code=exc.status_code,
                             headers=getattr(exc, "headers", None))
 
@@ -76,12 +80,17 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
         body = {"status": "ok" if schema == "ok" else "error", "schema": schema, "version": __version__}
         return JSONResponse(body, status_code=200 if schema == "ok" else 503)
 
-    @app.get("/", include_in_schema=False)
-    def root():
-        return {"service": settings.brand_name, "version": __version__, "openapi": "/openapi.json",
-                "docs": "/docs", "api": "/v1"}
+    if not settings.site_enabled:
+        @app.get("/", include_in_schema=False)
+        def root():
+            return {"service": settings.brand_name, "version": __version__, "openapi": "/openapi.json",
+                    "docs": "/docs", "api": "/v1"}
 
     app.include_router(routes_materials.router)
     app.include_router(routes_submissions.router)
     app.include_router(routes_datasets.router)
+    if settings.site_enabled:
+        # The website: server-rendered pages at /, over the same database (see materials_db.site).
+        app.include_router(site.router)
+        app.mount("/static", site.CachedStaticFiles(directory=site.STATIC_DIR), name="static")
     return app

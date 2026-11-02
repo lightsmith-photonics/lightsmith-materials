@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block main %}
+<div class="wrap page narrow">
+  <p class="eyebrow">404</p>
+  <h1>Not found</h1>
+  <p class="lead">There is no {{ what }} here.</p>
+  <form class="big-search" action="/search" method="get" role="search">
+    <label class="sr-only" for="nq">Search the database</label>
+    <input id="nq" name="q" type="search" placeholder="Search materials" data-typeahead autocomplete="off">
+    <button class="btn btn-primary" type="submit">Search</button>
+  </form>
+  <p><a href="/browse">Browse the catalog</a> or go <a href="/">home</a>.</p>
+</div>
+{% endblock %}

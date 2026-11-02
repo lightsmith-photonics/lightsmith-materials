@@ -25,9 +25,10 @@ from .deps import ApiError, Paging, base_url, brand, paging, session
 router = APIRouter(prefix="/v1", tags=["datasets"])
 
 Axis = Literal["wavelength_nm", "wavelength_um", "ev", "wavenumber"]
-Format = Literal["json", "csv", "yaml"]
+Format = Literal["json", "csv", "txt", "yaml"]
 EXPORT_RESPONSES = {
-    200: {"content": {"text/csv": {}, "application/yaml": {}}, "description": "JSON by default; CSV or YAML with format="},
+    200: {"content": {"text/csv": {}, "text/plain": {}, "application/yaml": {}},
+          "description": "JSON by default; CSV, tab-separated text or YAML with format="},
     404: {"model": S.Error}, 422: {"model": S.Error},
 }
 QUANTITY_DOC = ("nk | eps | alpha | skin_depth | all, or a comma-separated list of n, k, eps1, eps2, alpha, "
@@ -112,11 +113,11 @@ def _header(ds: Dataset, payload: dict, base: str, brand_name: str = "Lightsmith
             "conventions: vacuum wavelength; exp(-i omega t), k >= 0 for loss"]
 
 
-def _csv(header: list[str], columns: dict[str, list]) -> str:
+def _csv(header: list[str], columns: dict[str, list], delimiter: str = ",") -> str:
     buf = io.StringIO()
     for h in header:
         buf.write(f"# {h}\n")
-    w = csv.writer(buf, lineterminator="\n")
+    w = csv.writer(buf, lineterminator="\n", delimiter=delimiter)
     w.writerow(columns.keys())
     for row in zip(*columns.values()):
         w.writerow(["" if v is None else repr(v) for v in row])
@@ -128,11 +129,14 @@ def _export(payload: dict, fmt: str, ds: Dataset, base: str, names: list[str], b
     if fmt == "json":
         return JSONResponse(payload)
     axis = payload["axis"]
-    if fmt == "csv":
+    if fmt in ("csv", "txt"):
         cols = {f"{axis}": payload[axis]} if axis != "wavelength_nm" else {}
         cols["wavelength_nm"] = payload["wavelength_nm"]
         cols.update({q: payload[q] for q in names})
         header = _header(ds, payload, base, brand_name) + [f"warning: {w}" for w in payload["warnings"]]
+        if fmt == "txt":  # tab-separated
+            return PlainTextResponse(_csv(header, cols, "\t"), media_type="text/plain; charset=utf-8",
+                                     headers={"Content-Disposition": f'attachment; filename="{filename}.txt"'})
         return PlainTextResponse(_csv(header, cols), media_type="text/csv; charset=utf-8",
                                  headers={"Content-Disposition": f'attachment; filename="{filename}.csv"'})
     if names == ["n", "k"] and axis in ("wavelength_nm", "wavelength_um"):
@@ -243,7 +247,7 @@ def compare(request: Request,
                                                      **{q: UNITS[q] for q in names}},
                "items": out_items, "warnings": []}
     fmt = _format(request, format)
-    if fmt == "csv":
+    if fmt in ("csv", "txt"):
         cols = {axis: to_json_list(x)} if axis != "wavelength_nm" else {}
         cols["wavelength_nm"] = to_json_list(wl)
         for it in out_items:
@@ -252,6 +256,8 @@ def compare(request: Request,
         header = [f"comparison of {', '.join(it['dataset']['slug'] for it in out_items)}"]
         header += [f"{it['dataset']['slug']}: {it['dataset']['license']}; cite {it['dataset']['reference']}"
                    for it in out_items]
+        if fmt == "txt":
+            return PlainTextResponse(_csv(header, cols, "\t"), media_type="text/plain; charset=utf-8")
         return PlainTextResponse(_csv(header, cols), media_type="text/csv; charset=utf-8")
     if fmt == "yaml":
         return PlainTextResponse(yaml.safe_dump(payload, sort_keys=False, allow_unicode=True, default=str),
@@ -271,8 +277,9 @@ def dataset_data(request: Request, dataset_id: str,
                  points: int | None = Query(None, ge=1, le=20000,
                                             description="Uniform grid in the axis variable; default: native points "
                                                         "(formulas: 400 log-spaced points)"),
-                 format: Format | None = Query(None, description="json (default), csv or yaml (yaml with "
-                                                                 "quantity=nk is refractiveindex.info format)"),
+                 format: Format | None = Query(None, description="json (default), csv, txt (tab-separated) or yaml "
+                                                                 "(yaml with quantity=nk is refractiveindex.info "
+                                                                 "format)"),
                  version: int | None = Query(None, ge=1, description="Dataset version (default: current)"),
                  s: Session = Depends(session), base: str = Depends(base_url), brand_name: str = Depends(brand)):
     ds = _dataset_or_404(s, dataset_id)

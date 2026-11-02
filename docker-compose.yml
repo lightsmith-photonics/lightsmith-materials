@@ -22,6 +22,10 @@ x-app: &app
     CROSSREF_ENABLED: ${CROSSREF_ENABLED:-true}
     CROSSREF_MAILTO: ${CROSSREF_MAILTO:-}
     RII_COMMIT: ${RII_COMMIT:-c5c2f188e848453def5970e347399d653df2ffc2}
+    SITE_ENABLED: ${SITE_ENABLED:-true}
+    DOCS_URL: ${DOCS_URL:-https://docs.lightsmith.dev}
+    STUDIO_URL: ${STUDIO_URL:-https://studio.lightsmith.dev}
+    COMMUNITY_URL: ${COMMUNITY_URL:-https://lightsmith.dev}
   read_only: true
   tmpfs:
     - /tmp

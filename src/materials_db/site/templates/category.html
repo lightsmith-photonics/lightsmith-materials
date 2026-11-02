@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="wrap page">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/browse#categories">Categories</a></li><li aria-current="page">{{ info[0] }}</li></ol></nav>
+  <h1>{{ info[0] }}</h1>
+  <p class="lead">{{ info[1] }}</p>
+  {% set research_n = other if supplier else res.total %}
+  {% set supplier_n = res.total if supplier else other %}
+  {% if supplier_n %}
+  <nav class="tabs-inline" aria-label="Data source">
+    <a class="tab{% if not supplier %} active{% endif %}" href="/categories/{{ category }}"{% if not supplier %} aria-current="page"{% endif %}>Research data ({{ "{:,}".format(research_n) }})</a>
+    <a class="tab{% if supplier %} active{% endif %}" href="/categories/{{ category }}?supplier=true"{% if supplier %} aria-current="page"{% endif %}>Supplier datasheets ({{ "{:,}".format(supplier_n) }})</a>
+  </nav>
+  {% endif %}
+  <input class="filter" type="search" placeholder="Filter this list…" data-filter="#mats" autocomplete="off" aria-label="Filter materials">
+  <div id="mats">
+  {% for g in groups %}
+    <section data-filter-group>
+      {% if g.name %}<h2 class="divider">{{ g.name|sanitize(false) }}</h2>{% endif %}
+      <ul class="mat-grid">
+        {% for m in g["items"] %}
+        <li data-filter-item><a class="card mat-card" href="/materials/{{ m.slug }}">
+          <span class="mat-name">{{ (m.name_html or m.name)|sanitize(false) }}</span>
+          <span class="muted small">{{ m.dataset_count }} {{ "dataset" if m.dataset_count == 1 else "datasets" }}{% if m.range_nm %} · {{ m.range_nm[0]|um_range(m.range_nm[1]) }}{% endif %}</span>
+        </a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endfor %}
+  </div>
+  <p class="empty muted" hidden data-filter-empty>Nothing on this page matches. <a href="/search">Search the whole database</a>.</p>
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if page > 1 %}<a class="btn" href="?{% if supplier %}supplier=true&amp;{% endif %}page={{ page - 1 }}" rel="prev">← Previous</a>{% endif %}
+    <span class="muted">Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="btn" href="?{% if supplier %}supplier=true&amp;{% endif %}page={{ page + 1 }}" rel="next">Next →</a>{% endif %}
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}
