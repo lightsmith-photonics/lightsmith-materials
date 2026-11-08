@@ -2,7 +2,7 @@
 
 The machine-readable contract is the OpenAPI document at `GET /openapi.json` (interactive docs at `/docs`).
 This file explains the conventions and lists every endpoint, including the ones added beyond the original brief.
-The community platform (`apps/web`) and Studio (`apps/studio`) build against it, so keep existing fields and
+Lightsmith Community and Lightsmith Studio build against it, so keep existing fields and
 parameters stable. Adding fields is fine; renaming or removing them needs a `/v2`.
 
 Default base URL in development: `http://localhost:8100`.
@@ -266,7 +266,7 @@ path, origin_url}`. Past versions stay readable through `?version=` on `/data`, 
 ### `POST /v1/submissions`
 A submission can be sent in two ways.
 
-**1. JSON** (`application/json`; this is what `apps/web` sends):
+**1. JSON** (`application/json`; this is what Community sends):
 
 ```json
 {"material_id": "au" | null, "material_name": "…", "formula": "…", "category": "metal",
@@ -369,7 +369,7 @@ These changes are additive; nothing existing changed.
 - New category IDs (see `/v1/categories`).
 - New submission fields: `optical_axis`, `axis_partner_id`, `state`, `thermo_optic`.
 
-## Differences from `web-api-expectations.md`
+## Response shapes clients rely on
 
 - List endpoints return `{items, total, page, per_page, limit, offset}`, including `GET /v1/submissions`.
 - `GET /v1/compare` returns `{…, items: [{dataset, data}]}`, not a bare array.

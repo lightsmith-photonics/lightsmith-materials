@@ -26,6 +26,9 @@ x-app: &app
     DOCS_URL: ${DOCS_URL:-https://docs.lightsmith.dev}
     STUDIO_URL: ${STUDIO_URL:-https://studio.lightsmith.dev}
     COMMUNITY_URL: ${COMMUNITY_URL:-https://lightsmith.dev}
+    LIBRARY_REPO_URL: ${LIBRARY_REPO_URL:-https://github.com/lightsmith-photonics/lightsmith}
+    LIBRARY_INSTALL: ${LIBRARY_INSTALL:-pip install lightsmith}
+    MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-5000000}
   read_only: true
   tmpfs:
     - /tmp

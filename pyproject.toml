@@ -46,4 +46,4 @@ markers = ["network: needs internet access (Crossref, GitHub)", "postgres: needs
 addopts = "-m 'not network'"
 
 [tool.uv.sources]
-lightsmith = { path = "../lightsmith", editable = true }  # sibling checkout until the library is published
+lightsmith = { path = "../lightsmith", editable = true }  # development: the sibling checkout (releases are on PyPI)

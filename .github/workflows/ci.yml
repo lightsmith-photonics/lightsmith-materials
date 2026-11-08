@@ -1,4 +1,4 @@
-# CI for the lightsmith-materials repository (this directory becomes the repository root).
+# CI for the lightsmith-materials repository.
 name: ci
 
 on:

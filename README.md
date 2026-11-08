@@ -152,11 +152,11 @@ counts below are research materials; the 1,784 supplier datasheets are counted s
 | Category | Content | Research materials |
 | --- | --- | --- |
 | `semiconductor` | Semiconductors and photonic platforms: Si, SiN, InP, GaAs, LiNbO₃/TFLN, LiTaO₃, AlN, … | 78 |
-| `glass_oxide` | Glasses, oxides and dielectrics. Supplier glass catalogs are also here. | 121 (+1,784 supplier) |
+| `glass_oxide` | Glasses, oxides and dielectrics. Supplier glass catalogs are also here. | 121 (+1,779 supplier) |
 | `polymer` | Polymers and photoresists (SU-8, PMMA resists, IP-Dip, …) | 64 |
 | `2d` | 2D materials (TMDs, MXenes, …) | 23 |
 | `metal` | Metals and conductors | 64 |
-| `liquid` | Liquids | 72 |
+| `liquid` | Liquids | 72 (+5 supplier) |
 | `phase_change` | Phase-change materials: GST (crystalline and amorphous), VO₂. Sb₂Se₃, Sb₂S₃ and GeTe are recognised when they arrive. | 2 |
 | `gas`, `biological`, `other` | | 19, 11, 10 |
 
@@ -208,11 +208,11 @@ in `src/materials_db/migrations`.
 
 ## Repository
 
-This directory is self-contained, ready to become the `lightsmith-materials` repository. It has its own
-`pyproject.toml`, `uv.lock`, `requirements.lock`, LICENSE, tests and fixtures, and `.github/workflows/ci.yml`, which runs the tests
-on SQLite and Postgres, builds the image, and runs a compose smoke test. Nothing refers to paths outside it.
-The simulation library is optional, installed with `--with-editable` in the monorepo or `LIBRARY_SPEC` in
-Docker.
+This repository is self-contained. It has its own `pyproject.toml`, `uv.lock`, `requirements.lock`, LICENSE,
+tests and fixtures, and `.github/workflows/ci.yml`, which runs the tests on SQLite and Postgres, builds the image,
+and runs a compose smoke test. The simulation library is optional: `uv run --extra library` uses a sibling
+`../lightsmith` checkout, and Docker images take a pip requirement in `LIBRARY_SPEC`, such as
+`lightsmith==0.2.0` from PyPI.
 
 ## Open questions for the owner
 
@@ -224,9 +224,7 @@ Docker.
    database?
 4. **Supplier datasheets.** There are 1,784 datasheet materials, almost all in `glass_oxide`. They are tagged
    and searchable separately; should the UI hide them by default?
-5. **Library package.** Docker images can bundle the library for fits (`LIBRARY_SPEC`). Which package name and
-   version will Lightsmith publish?
-6. **Upstream updates.** When should `RII_COMMIT` move forward? Updates arrive as new versions, and removed
+5. **Upstream updates.** When should `RII_COMMIT` move forward? Updates arrive as new versions, and removed
    entries are withdrawn rather than deleted.
-7. **Measurement method.** The source has no structured measurement-method field. Should we backfill a
+6. **Measurement method.** The source has no structured measurement-method field. Should we backfill a
    controlled vocabulary?
