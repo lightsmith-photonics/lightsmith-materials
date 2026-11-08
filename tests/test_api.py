@@ -201,7 +201,8 @@ def test_yaml_export_is_refractiveindex_format(client):
     wl = np.array(blocks[0]["wavelength_um"]) * 1000
     n, k = Dispersion(blocks).nk(wl)
     n0, k0 = ref.nk(wl)
-    np.testing.assert_allclose(n, n0) and np.testing.assert_allclose(k, k0)
+    np.testing.assert_allclose(n, n0)
+    np.testing.assert_allclose(k, k0)
     materials = library_module("materials")
     if materials is None:
         pytest.skip("simulation library not installed")
